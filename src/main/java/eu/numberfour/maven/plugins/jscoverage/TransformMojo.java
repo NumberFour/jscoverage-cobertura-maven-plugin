@@ -82,8 +82,6 @@ public class TransformMojo extends AbstractMojo {
 
                 Document doc = getDocument(packages);
                 XMLOutputter outputter = getOutputter();
-                //fileWriter = new FileWriter(project.getBasedir().toString() + "/target/cobertura-coverage.xml");
-                
                 
                 fileWriter = new FileWriter(outputFile);
                 fileWriter.write(outputter.outputString(doc));
@@ -106,7 +104,6 @@ public class TransformMojo extends AbstractMojo {
 
         Element clazz = new Element("class");
         clazz.setAttribute("filename", entry.getKey().toString());
-        clazz.setAttribute("line-rate", entry.getKey().toString());
 
         clazz.setAttribute("branch-rate", "0");
         clazz.setAttribute("complexity", "0.0");
@@ -116,8 +113,11 @@ public class TransformMojo extends AbstractMojo {
         JsonObject obj = (JsonObject) entry.getValue();
         JsonArray lines = (JsonArray) obj.get("coverage");
 
+        //Mutable ints so that they can be passes into the method and just be 
+        //incremented there and not be returned
         MutableInt interestingLinesInClass = new MutableInt(0);
         MutableInt hitLinesInClass = new MutableInt(0);
+        
         clazz.addContent(getLines(lines, hitLinesInClass, interestingLinesInClass));
         float lineRate = hitLinesInClass.floatValue() / interestingLinesInClass.intValue();
         clazz.setAttribute("line-rate", Float.toString(lineRate));
@@ -180,9 +180,7 @@ public class TransformMojo extends AbstractMojo {
 
     private static XMLOutputter getOutputter() {
         Format format = Format.getPrettyFormat();
-
         XMLOutputter outputter = new XMLOutputter(format);
-
         return outputter;
     }
 }
