@@ -53,14 +53,14 @@ public class TransformMojo extends AbstractMojo {
     /**
      * File into which to save the output of the transformation.
      * 
-     * @parameter default-value="${basedir}/target/cobertura-coverage.xml"
+     * @parameter default-value="${basedir}/target/coverage/cobertura-coverage.xml"
      */
     private String outputFile;
     
     /**
      * File from where to read the input of the transformation.
      * 
-     * @parameter default-value="${basedir}/target/jscoverage.json"
+     * @parameter default-value="${basedir}/target/coverage/jscoverage.json"
      */
     private String inputFile;
 
