@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -46,40 +48,57 @@ public class TransformMojo extends AbstractMojo {
      * @readonly
      */
     private MavenProject project;
+    
+    /**
+     * File into which to save the output of the transformation.
+     * 
+     * @parameter default-value="${basedir}/target/cobertura-coverage.xml"
+     */
+    private String outputFile;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
+        {
+            FileWriter fileWriter = null;
+            try {
+                getLog().info("Transforming jscoverage output to Cobertura's XML format...");
+                getLog().info("");
 
-        try {
+                JsonParser parser = new JsonParser();
+                Reader reader = new FileReader("/Users/lenni/jscoverage.json");
+                JsonObject object = parser.parse(reader).getAsJsonObject();
+                Set<Entry<String, JsonElement>> entries = object.entrySet();
 
-            getLog().info("Transforming jscoverage output to Cobertura's XML format");
+                Element packages = new Element("packages");
+                Element pkg = new Element("package");
+                pkg.setAttribute("branch-rate", "0");
+                pkg.setAttribute("complexity", "0.0");
+                pkg.setAttribute("name", "application");
+                packages.addContent(pkg);
 
-            JsonParser parser = new JsonParser();
-            Reader reader = new FileReader("/Users/lenni/jscoverage.json");
-            JsonObject object = parser.parse(reader).getAsJsonObject();
+                for (Entry entry : entries) {
+                    Element clazz = getClass(entry);
+                    pkg.addContent(clazz);
+                }
 
-            Set<Entry<String, JsonElement>> entries = object.entrySet();
+                Document doc = getDocument(packages);
+                XMLOutputter outputter = getOutputter();
+                //fileWriter = new FileWriter(project.getBasedir().toString() + "/target/cobertura-coverage.xml");
+                
+                
+                fileWriter = new FileWriter(outputFile);
+                fileWriter.write(outputter.outputString(doc));
 
-            Element packages = new Element("packages");
+                getLog().info("Output written to "+outputFile);
 
-            Element pkg = new Element("package");
-            pkg.setAttribute("branch-rate", "0");
-            pkg.setAttribute("complexity", "0.0");
-            pkg.setAttribute("name", "application");
-            packages.addContent(pkg);
-
-            for (Entry entry : entries) {
-                Element clazz = getClass(entry);
-                pkg.addContent(clazz);
+            } catch (IOException ex) {
+                Logger.getLogger(TransformMojo.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    fileWriter.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(TransformMojo.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-
-            Document doc = getDocument(packages);
-
-            XMLOutputter outputter = getOutputter();
-            System.out.println(outputter.outputString(doc));
-
-
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(TransformMojo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -127,16 +146,16 @@ public class TransformMojo extends AbstractMojo {
             //code stuff
             if (!(array.get(i) instanceof JsonNull)) {
                 interestingLinesInClass.add(1);
-                
+
                 int hits = array.get(i).getAsInt();
-                if (hits>0) {
+                if (hits > 0) {
                     classHits.add(1);
                 }
-                
+
                 line.setAttribute("hits", Integer.toString(hits));
                 lines.addContent(line);
             }
-            
+
 
         }
 
