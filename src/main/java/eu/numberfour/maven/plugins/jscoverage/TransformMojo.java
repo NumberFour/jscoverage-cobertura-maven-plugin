@@ -56,12 +56,21 @@ public class TransformMojo extends AbstractMojo {
      * @parameter default-value="${basedir}/target/cobertura-coverage.xml"
      */
     private String outputFile;
+    
+    /**
+     * File from where to read the input of the transformation.
+     * 
+     * @parameter default-value="${basedir}/target/jscoverage.json"
+     */
+    private String inputFile;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         {
             FileWriter fileWriter = null;
             try {
                 getLog().info("Transforming jscoverage output to Cobertura's XML format...");
+                getLog().info("");
+                getLog().info("Reading input from "+inputFile);
                 getLog().info("");
                 
                 Set<Entry<String, JsonElement>> entries = getJson();
@@ -73,7 +82,6 @@ public class TransformMojo extends AbstractMojo {
                 
                 fileWriter = new FileWriter(outputFile);
                 fileWriter.write(outputter.outputString(doc));
-
                 getLog().info("Output written to "+outputFile);
 
             } catch (IOException ex) {
@@ -90,7 +98,7 @@ public class TransformMojo extends AbstractMojo {
 
     private Set<Entry<String, JsonElement>> getJson() throws JsonIOException, JsonSyntaxException, FileNotFoundException {
         JsonParser parser = new JsonParser();
-        Reader reader = new FileReader("/Users/lenni/jscoverage.json");
+        Reader reader = new FileReader(inputFile);
         JsonObject object = parser.parse(reader).getAsJsonObject();
         Set<Entry<String, JsonElement>> entries = object.entrySet();
         return entries;
