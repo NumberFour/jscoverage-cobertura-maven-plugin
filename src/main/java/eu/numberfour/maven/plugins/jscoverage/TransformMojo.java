@@ -29,8 +29,8 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * <p>
- * This goal will compile jsps for a webapp so that they can be included in a
- * war.
+ * This goal will take jscoverage's JSON output and transform it into the 
+ * XML as expected by Cobertura.
  * </p>
  * 
  * @author <a href="mailto:leonard.ehrenfried@web.de">Leonard Ehrenfried</a>
