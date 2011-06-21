@@ -2,9 +2,11 @@ package eu.numberfour.maven.plugins.jscoverage;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -34,7 +36,6 @@ import org.jdom.output.XMLOutputter;
  * @author <a href="mailto:leonard.ehrenfried@web.de">Leonard Ehrenfried</a>
  * 
  * @goal transform
- * @phase process-sources
  * @requiresDependencyResolution compile
  * @description Transforms jscoverage's JSON into Cobertura's XML format
  */
@@ -62,23 +63,10 @@ public class TransformMojo extends AbstractMojo {
             try {
                 getLog().info("Transforming jscoverage output to Cobertura's XML format...");
                 getLog().info("");
-
-                JsonParser parser = new JsonParser();
-                Reader reader = new FileReader("/Users/lenni/jscoverage.json");
-                JsonObject object = parser.parse(reader).getAsJsonObject();
-                Set<Entry<String, JsonElement>> entries = object.entrySet();
-
-                Element packages = new Element("packages");
-                Element pkg = new Element("package");
-                pkg.setAttribute("branch-rate", "0");
-                pkg.setAttribute("complexity", "0.0");
-                pkg.setAttribute("name", "application");
-                packages.addContent(pkg);
-
-                for (Entry entry : entries) {
-                    Element clazz = getClass(entry);
-                    pkg.addContent(clazz);
-                }
+                
+                Set<Entry<String, JsonElement>> entries = getJson();
+                
+                Element packages = getPackages(entries);
 
                 Document doc = getDocument(packages);
                 XMLOutputter outputter = getOutputter();
@@ -100,6 +88,28 @@ public class TransformMojo extends AbstractMojo {
         }
     }
 
+    private Set<Entry<String, JsonElement>> getJson() throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+        JsonParser parser = new JsonParser();
+        Reader reader = new FileReader("/Users/lenni/jscoverage.json");
+        JsonObject object = parser.parse(reader).getAsJsonObject();
+        Set<Entry<String, JsonElement>> entries = object.entrySet();
+        return entries;
+    }
+
+    private Element getPackages(Set<Entry<String, JsonElement>> entries) {
+        Element packages = new Element("packages");
+        Element pkg = new Element("package");
+        pkg.setAttribute("branch-rate", "0");
+        pkg.setAttribute("complexity", "0.0");
+        pkg.setAttribute("name", "application");
+        packages.addContent(pkg);
+        for (Entry entry : entries) {
+            Element clazz = getClass(entry);
+            pkg.addContent(clazz);
+        }
+        return packages;
+    }
+
     private static Element getClass(Entry entry) {
 
         Element clazz = new Element("class");
@@ -118,7 +128,9 @@ public class TransformMojo extends AbstractMojo {
         MutableInt interestingLinesInClass = new MutableInt(0);
         MutableInt hitLinesInClass = new MutableInt(0);
         
-        clazz.addContent(getLines(lines, hitLinesInClass, interestingLinesInClass));
+        Element linesElm = getLines(lines, hitLinesInClass, interestingLinesInClass);
+        clazz.addContent(linesElm);
+        
         float lineRate = hitLinesInClass.floatValue() / interestingLinesInClass.intValue();
         clazz.setAttribute("line-rate", Float.toString(lineRate));
 
@@ -155,8 +167,6 @@ public class TransformMojo extends AbstractMojo {
                 line.setAttribute("hits", Integer.toString(hits));
                 lines.addContent(line);
             }
-
-
         }
 
         return lines;
