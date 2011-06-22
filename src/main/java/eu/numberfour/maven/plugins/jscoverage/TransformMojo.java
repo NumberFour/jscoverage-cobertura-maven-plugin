@@ -80,6 +80,7 @@ public class TransformMojo extends AbstractMojo {
                 
                 fileWriter = new FileWriter(outputFile);
                 fileWriter.write(outputter.outputString(doc));
+                
                 getLog().info("Output written to "+outputFile);
 
             } catch (IOException ex) {
