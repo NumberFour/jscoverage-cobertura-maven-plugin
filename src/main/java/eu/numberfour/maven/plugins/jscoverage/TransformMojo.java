@@ -126,7 +126,7 @@ public class TransformMojo extends AbstractMojo {
         Element pkg = new Element("package");
         pkg.setAttribute("branch-rate", "0.0");
         pkg.setAttribute("complexity", "0.0");
-        pkg.setAttribute("name", "application");
+        pkg.setAttribute("name", "");
         
         
         Element classes = new Element("classes");
