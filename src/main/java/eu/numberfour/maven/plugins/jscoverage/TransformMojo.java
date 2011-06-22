@@ -61,6 +61,14 @@ public class TransformMojo extends AbstractMojo {
      * @parameter default-value="${basedir}/target/coverage/jscoverage.json"
      */
     private String inputFile;
+    
+    /**
+     * Path where the source files are being located (useful so the Jenkins Plugin
+     * can link directly to the file).
+     *
+     * @parameter default-value="${basedir}/target/classes/"
+     */
+    private String sourcePath;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         {
@@ -77,7 +85,8 @@ public class TransformMojo extends AbstractMojo {
                 
                 Element sources = new Element("sources");
                 Element source = new Element("source");
-                source.setText("http://build-master.corp.numberfour.eu:8080/view/CI_client/job/CI_client_test/ws/fabelhaft-test/target/classes/");
+                
+                source.setText(sourcePath);
                 sources.addContent(source);
 
                 Document doc = getDocument(packages, sources);
