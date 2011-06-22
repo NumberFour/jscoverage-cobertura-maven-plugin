@@ -8,6 +8,8 @@
     <name>jscoverage to Cobertura XML Plugin</name>
     <description>Plugin to convert jscoverage's JSON to the Cobertura XML format</description>
 	
+    
+        
     <developers>
         <developer>
             <id>lenni</id>
@@ -144,6 +146,21 @@
     </reporting>
 
     <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>Hosted Release</name>
+            <url>
+http://deployment:deployment@repository.corp.numberfour.eu/nexus/content/repositories/releases
+            </url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Hosted Snapshot</name>
+            <url>
+http://deployment:deployment@repository.corp.numberfour.eu/nexus/content/repositories/snapshots
+            </url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
         <site>
             <id>gh-pages</id>
             <!-- This gets automatically pushed to the gh-pages branch. -->

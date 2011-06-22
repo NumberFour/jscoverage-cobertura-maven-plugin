@@ -84,6 +84,7 @@ public class TransformMojo extends AbstractMojo {
 
             } catch (IOException ex) {
                 getLog().error(ex);
+                throw new MojoExecutionException("Input file not found!", ex);
             } finally {
                 try {
                     fileWriter.close();
