@@ -14,8 +14,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -73,7 +71,7 @@ public class TransformMojo extends AbstractMojo {
                 getLog().info("Reading input from "+inputFile);
                 getLog().info("");
                 
-                Set<Entry<String, JsonElement>> entries = getJson();
+                Set<Entry<String, JsonElement>> entries = getJson(inputFile);
                 
                 Element packages = getPackages(entries);
 
@@ -85,18 +83,18 @@ public class TransformMojo extends AbstractMojo {
                 getLog().info("Output written to "+outputFile);
 
             } catch (IOException ex) {
-                Logger.getLogger(TransformMojo.class.getName()).log(Level.SEVERE, null, ex);
+                getLog().error(ex);
             } finally {
                 try {
                     fileWriter.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(TransformMojo.class.getName()).log(Level.SEVERE, null, ex);
+                    getLog().error(ex);
                 }
             }
         }
     }
 
-    private Set<Entry<String, JsonElement>> getJson() throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+    private static Set<Entry<String, JsonElement>> getJson(String inputFile) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
         JsonParser parser = new JsonParser();
         Reader reader = new FileReader(inputFile);
         JsonObject object = parser.parse(reader).getAsJsonObject();
@@ -104,21 +102,35 @@ public class TransformMojo extends AbstractMojo {
         return entries;
     }
 
-    private Element getPackages(Set<Entry<String, JsonElement>> entries) {
+    private static Element getPackages(Set<Entry<String, JsonElement>> entries) {
         Element packages = new Element("packages");
         Element pkg = new Element("package");
         pkg.setAttribute("branch-rate", "0");
         pkg.setAttribute("complexity", "0.0");
         pkg.setAttribute("name", "application");
         packages.addContent(pkg);
+        
+        //Mutable ints so they can be passes by reference
+        MutableInt interestingLinesInPackage = new MutableInt(0);
+        MutableInt hitLinesInPackage = new MutableInt(0);
+        
         for (Entry entry : entries) {
-            Element clazz = getClass(entry);
+            Element clazz = getClass(entry, hitLinesInPackage, interestingLinesInPackage);
             pkg.addContent(clazz);
         }
+        
+        float lineRate = hitLinesInPackage.floatValue()/interestingLinesInPackage.floatValue();
+        pkg.setAttribute("line-rate", Float.toString(lineRate));
+        
         return packages;
     }
-
-    private static Element getClass(Entry entry) {
+    
+    /**
+     * 
+     * @param entry
+     * @return 
+     */
+    private static Element getClass(Entry entry, MutableInt hitLines, MutableInt interestingLines) {
 
         Element clazz = new Element("class");
         clazz.setAttribute("filename", entry.getKey().toString());
@@ -143,6 +155,9 @@ public class TransformMojo extends AbstractMojo {
         clazz.setAttribute("line-rate", Float.toString(lineRate));
 
         //System.out.println(hitLinesInClass.floatValue() + "/" + lines.size());
+        
+        hitLines.add(hitLinesInClass);
+        interestingLines.add(interestingLinesInClass);
 
         return clazz;
     }
@@ -162,8 +177,7 @@ public class TransformMojo extends AbstractMojo {
             line.setAttribute("branch", "false");
             line.setAttribute("line", Integer.toString(i));
 
-            //null entries mean that the line was a comment or other uninteresting
-            //code stuff
+            //a null entry means that the line was a comment or otherwise uninteresting
             if (!(array.get(i) instanceof JsonNull)) {
                 interestingLinesInClass.add(1);
 
