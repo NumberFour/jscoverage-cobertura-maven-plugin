@@ -6,9 +6,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>jscoverage to Cobertura XML Plugin</name>
-    <description>Plugin to convert jscoverage to the Cobertura XML format</description>
-	
-    <url>https://github.com/lenniboy/jspc-maven-plugin#readme</url>
+    <description>Plugin to convert jscoverage's JSON to the Cobertura XML format</description>
 	
     <developers>
         <developer>
@@ -21,11 +19,13 @@
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+    
+    <url>https://github.com/NumberFour/jscoverage-cobertura-maven-plugin</url>
 
     <scm>
-        <connection>scm:git:git://github.com/lenniboy/jspc-maven-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:lenniboy/jspc-maven-plugin.git</developerConnection>
-        <url>https://github.com/lenniboy/jspc-maven-plugin</url>
+        <connection>scm:git:git://github.com/NumberFour/jscoverage-cobertura-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:NumberFour/jscoverage-cobertura-maven-plugin.git</developerConnection>
+        <url>https://github.com/NumberFour/jscoverage-cobertura-maven-plugin</url>
     </scm>
 
     <licenses>
