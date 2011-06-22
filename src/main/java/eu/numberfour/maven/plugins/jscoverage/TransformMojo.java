@@ -82,12 +82,7 @@ public class TransformMojo extends AbstractMojo {
                 Set<Entry<String, JsonElement>> entries = getJson(inputFile);
                 
                 Element packages = getPackages(entries);
-                
-                Element sources = new Element("sources");
-                Element source = new Element("source");
-                
-                source.setText(sourcePath);
-                sources.addContent(source);
+                Element sources = getSources();
 
                 Document doc = getDocument(packages, sources);
                 
@@ -111,6 +106,16 @@ public class TransformMojo extends AbstractMojo {
                 }
             }
         }
+    }
+
+    private Element getSources() {
+        
+        Element sources = new Element("sources");
+        Element source = new Element("source");
+        source.setText(sourcePath);
+        sources.addContent(source);
+        return sources;
+        
     }
 
     private static Set<Entry<String, JsonElement>> getJson(String inputFile) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
@@ -157,12 +162,18 @@ public class TransformMojo extends AbstractMojo {
     private static Element getClass(Entry entry, MutableInt hitLines, MutableInt interestingLines) {
 
         Element clazz = new Element("class");
-        clazz.setAttribute("filename", entry.getKey().toString());
+        
+        String fileName = entry.getKey().toString();
+        if(fileName.startsWith("/")||fileName.startsWith("\\")){
+            fileName=fileName.substring(1);
+        }
+            
+        clazz.setAttribute("filename", fileName);
 
         clazz.setAttribute("branch-rate", "0.0");
         clazz.setAttribute("complexity", "0.0");
         clazz.setAttribute("name", "application");
-        clazz.setAttribute("name", entry.getKey().toString());
+        clazz.setAttribute("name", fileName);
 
         JsonObject obj = (JsonObject) entry.getValue();
         JsonArray lines = (JsonArray) obj.get("coverage");
