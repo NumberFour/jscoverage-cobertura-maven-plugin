@@ -24,3 +24,5 @@ This plugin converts jscoverage's JSON output into the Cobertura XML format. It 
 Alternatively you can run it from the command line with the following line:
 
     mvn eu.numberfour.maven.plugins:jscoverage-cobertura-maven-plugin:transform
+
+The complete Mojo documentation is available here: http://numberfour.github.com/jscoverage-cobertura-maven-plugin/transform-mojo.html
