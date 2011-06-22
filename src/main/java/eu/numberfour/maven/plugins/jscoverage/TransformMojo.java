@@ -74,14 +74,22 @@ public class TransformMojo extends AbstractMojo {
                 Set<Entry<String, JsonElement>> entries = getJson(inputFile);
                 
                 Element packages = getPackages(entries);
-
-                Document doc = getDocument(packages);
-                XMLOutputter outputter = getOutputter();
                 
+                Element sources = new Element("sources");
+                Element source = new Element("source");
+                source.setText("http://build-master.corp.numberfour.eu:8080/view/CI_client/job/CI_client_test/ws/fabelhaft-test/target/classes/");
+                sources.addContent(source);
+
+                Document doc = getDocument(packages, sources);
+                
+                
+                getLog().info("Writing output to "+outputFile+" ...");
+                
+                XMLOutputter outputter = getOutputter();
                 fileWriter = new FileWriter(outputFile);
                 fileWriter.write(outputter.outputString(doc));
                 
-                getLog().info("Output written to "+outputFile);
+                getLog().info("...done");
 
             } catch (IOException ex) {
                 getLog().error(ex);
@@ -107,10 +115,12 @@ public class TransformMojo extends AbstractMojo {
     private static Element getPackages(Set<Entry<String, JsonElement>> entries) {
         Element packages = new Element("packages");
         Element pkg = new Element("package");
-        pkg.setAttribute("branch-rate", "0");
+        pkg.setAttribute("branch-rate", "0.0");
         pkg.setAttribute("complexity", "0.0");
         pkg.setAttribute("name", "application");
-        packages.addContent(pkg);
+        
+        
+        Element classes = new Element("classes");
         
         //Mutable ints so they can be passes by reference
         MutableInt interestingLinesInPackage = new MutableInt(0);
@@ -118,8 +128,11 @@ public class TransformMojo extends AbstractMojo {
         
         for (Entry entry : entries) {
             Element clazz = getClass(entry, hitLinesInPackage, interestingLinesInPackage);
-            pkg.addContent(clazz);
+            classes.addContent(clazz);
         }
+        
+        pkg.addContent(classes);
+        packages.addContent(pkg);
         
         float lineRate = hitLinesInPackage.floatValue()/interestingLinesInPackage.floatValue();
         pkg.setAttribute("line-rate", Float.toString(lineRate));
@@ -137,7 +150,7 @@ public class TransformMojo extends AbstractMojo {
         Element clazz = new Element("class");
         clazz.setAttribute("filename", entry.getKey().toString());
 
-        clazz.setAttribute("branch-rate", "0");
+        clazz.setAttribute("branch-rate", "0.0");
         clazz.setAttribute("complexity", "0.0");
         clazz.setAttribute("name", "application");
         clazz.setAttribute("name", entry.getKey().toString());
@@ -156,8 +169,6 @@ public class TransformMojo extends AbstractMojo {
         float lineRate = hitLinesInClass.floatValue() / interestingLinesInClass.intValue();
         clazz.setAttribute("line-rate", Float.toString(lineRate));
 
-        //System.out.println(hitLinesInClass.floatValue() + "/" + lines.size());
-        
         hitLines.add(hitLinesInClass);
         interestingLines.add(interestingLinesInClass);
 
@@ -177,7 +188,7 @@ public class TransformMojo extends AbstractMojo {
         for (int i = 0; i < array.size(); i++) {
             Element line = new Element("line");
             line.setAttribute("branch", "false");
-            line.setAttribute("line", Integer.toString(i));
+            line.setAttribute("number", Integer.toString(i));
 
             //a null entry means that the line was a comment or otherwise uninteresting
             if (!(array.get(i) instanceof JsonNull)) {
@@ -196,18 +207,20 @@ public class TransformMojo extends AbstractMojo {
         return lines;
     }
 
-    private static Document getDocument(Element packages) {
+    private static Document getDocument(Element packages, Element sources) {
         Document document = new Document();
 
         DocType doctype = new DocType("coverage",
                 "http://cobertura.sourceforge.net/xml/coverage-03.dtd");
         document.addContent(doctype);
+        
+        
 
         Element coverage = new Element("coverage");
         document.addContent(coverage);
 
+        coverage.addContent(sources);
         coverage.addContent(packages);
-
 
         return document;
     }
