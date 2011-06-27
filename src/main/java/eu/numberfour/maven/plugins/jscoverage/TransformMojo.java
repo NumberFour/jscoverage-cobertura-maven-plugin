@@ -82,13 +82,12 @@ public class TransformMojo extends AbstractMojo {
                 Set<Entry<String, JsonElement>> entries = getJson(inputFile);
                 
                 Element packages = getPackages(entries);
-                Element sources = getSources();
+                Element sources = getSources(sourcePath);
 
                 Document doc = getDocument(packages, sources);
                 
-                
                 getLog().info("Writing output to "+outputFile+" ...");
-                
+
                 XMLOutputter outputter = getOutputter();
                 fileWriter = new FileWriter(outputFile);
                 fileWriter.write(outputter.outputString(doc));
@@ -108,7 +107,7 @@ public class TransformMojo extends AbstractMojo {
         }
     }
 
-    private Element getSources() {
+    private static Element getSources(String sourcePath) {
         
         Element sources = new Element("sources");
         Element source = new Element("source");
