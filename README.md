@@ -8,7 +8,7 @@ This plugin converts jscoverage's JSON output into the Cobertura XML format. It 
       <groupId>de.mytoys.maven.plugins</groupId>
       <artifactId>jscoverage-cobertura-maven-plugin</artifactId>
       <groupId>eu.numberfour.maven.plugins</groupId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.2.0</version>
       <executions>
         <execution>
           <goals>
