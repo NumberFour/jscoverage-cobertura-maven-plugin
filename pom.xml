@@ -150,6 +150,12 @@
     </reporting>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Hosted Snapshot</name>
+            <url>http://repository.corp.numberfour.eu/nexus/content/repositories/snapshots</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
         <site>
             <id>gh-pages</id>
             <!-- This gets automatically pushed to the gh-pages branch. -->
